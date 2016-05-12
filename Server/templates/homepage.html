@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+
+<head>
+    <title>Myusic</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js"></script>
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-3d.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+    <!-- Adding Highcharts theme !-->
+    <!--<script type="text/javascript" src="{{ url_for('static', filename='highcharts_sand_theme.js') }}"></script>!-->
+    <!-- Adding wordcloud library theme !-->
+    <script type="text/javascript" src="{{ url_for('static', filename='d3_wordcloud.js') }}"></script>
+    <script>
+      function validate_name_form()
+      {
+        var text = document.forms["name_form"]["song_name"].value;
+        if(text==null || text=="")
+        {
+          alert("Please fill in a song name before submitting")
+          return false
+        }
+      }
+
+      function validate_lyrics_form()
+      {
+        var text = document.forms["lyrics_form"]["song_lyrics"].value;
+        if(text==null || text=="")
+        {
+          alert("Please fill in lyrics before submitting")
+          return false
+        }
+      }
+
+      $( document ).ready(function() {
+        $("#word_search_button").click(function(e){
+          e.preventDefault();
+          var text = $('#search_word').val();
+          $.post("/search_word_statistics/",
+          {
+              word:text
+          },
+          function(data, status){
+                var chart = new Highcharts.Chart({
+                chart: {
+                    renderTo: 'word_stats',
+                    backgroundColor:'#F5F5F5'
+                 },
+                 title: {
+                     text: 'Frequency of word in every cluster'
+                 },
+                 xAxis:{
+                   allowDecimals: false
+                 },
+                series: [{
+                    name:"Frequency",
+                    data: data['chart']['x']
+                }] //series
+                });
+            chart.series[0].setData(data['chart']['y']);
+            });
+          });
+        });
+
+        $( document ).ready(function() {
+          $("#get_emotion_button").click(function(e){
+            e.preventDefault();
+            var text = $('#emotions_filename').val();
+            $.post("/get_song_emotions/",
+            {
+                song_name:text
+            },
+            function(data, status){
+                $(function () {
+                  var emotion_chart = new Highcharts.Chart({
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: "#F5F5F5",
+                        renderTo: 'lyrics_emotions',
+                        options3d: {
+                            enabled: true,
+                            alpha: 45
+                        }
+                    },
+                    title: {
+                        text: 'Emotions depicted by the song'
+                    },
+                    plotOptions: {
+                        pie: {
+                            innerSize: 100,
+                            depth: 45
+                        }
+                    },
+                    series: [{
+                        name: 'Score',
+                        data: data['chart']['data']
+                    }]
+                });
+              });
+            });
+          });
+          });
+
+            $(function () {
+              $('#cluster_stats').highcharts({
+              chart: {
+                  type: 'column',
+                  backgroundColor: "#F5F5F5"
+              },
+              title: {
+                  text: 'Clusters V/S Number of songs in each'
+              },
+              xAxis: {
+                  categories: {{ return_dict.chart.x }},
+                  crosshair: true
+              },
+              yAxis: {
+                  min: 0,
+                  title: {
+                      text: 'Number of songs (units)'
+                  }
+              },
+              tooltip: {
+                  headerFormat: '<span style="font-size:13px">Cluster : {point.key}</span><table>',
+                  pointFormat: '<tr><td style="color:{series.color};padding:0">Songs: </td>' +
+                      '<td style="padding:0"><b>{point.y}</b></td></tr>',
+                  footerFormat: '</table>',
+                  shared: true,
+                  useHTML: true
+              },
+              plotOptions: {
+                  column: {
+                      pointPadding: 0.2,
+                      borderWidth: 0
+                  }
+              },
+              series: [{
+                  name: 'Cluster Number',
+                  data: {{ return_dict.chart.y }}
+              }]
+          });
+      });
+    </script>
+
+    <style>
+        body {
+            font-family:"Lucida Grande","Droid Sans",Arial,Helvetica,sans-serif;
+            background-color: #F5F5F5;
+        }
+        .legend {
+            border: 1px solid #555555;
+            border-radius: 5px 5px 5px 5px;
+            font-size: 0.8em;
+            margin: 10px;
+            padding: 8px;
+        }
+        .bld {
+            font-weight: bold;
+        }
+        .collapsible-body {
+          white-space:pre-wrap;
+        }
+        .card-panel{
+          background-color: #3F3250;
+        }
+        #song_name{
+          color: #FFFFFF;
+        }
+        #song_lyrics{
+          color: #FFFFFF;
+        }
+
+    </style>
+</head>
+
+<body>
+  <nav>
+    <div class="nav-wrapper">
+      <a href="/" class="brand-logo center">Myusic</a>
+    </div>
+  </nav>
+
+  <div class="row">
+    <div class="col s12 m12 l7">
+      <div class="row">
+        <div id="chart" align="left"></div>
+      </div>
+
+      <div class="row">
+        <div class="col s12 m12 l12" id="cluster_stats" align="left"></div>
+      </div>
+
+      <div class="row">
+        <div class="row">
+          <div class="col s12 m12 l12" id="word_stats" align="left"></div>
+        </div>
+        <form name="word_analysis_form" class="col s12">
+          <div class="row">
+            <div class="col s12">
+              <textarea id="search_word" class="materialize-textarea" name="search_word"></textarea>
+              <label for="textarea1">Search word</label>
+            </div>
+          </div>
+          <button id="word_search_button" class="btn waves-effect waves-light center-align teal lighten-1" type="submit" name="word_stats_button">Get word frequencies
+            <i class="material-icons right">send</i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="col s12 m12 l5">
+
+      <div class="row">
+        <div id="recommendation-card" class="card-panel center-align">
+          <span class="white-text">
+            Recommended Songs
+          </span>
+        </div>
+      </div>
+
+      <div id="resultarea" class="row">
+      {% if return_dict and return_dict.song_list %}
+        {% for song in return_dict.song_list %}
+            <ul class="collapsible popout" data-collapsible="accordion">
+               <li>
+                  <div class="collapsible-header"><i class="material-icons">queue_music</i>{{ song.name|safe }}</div>
+                  <div class="collapsible-body"><p>{{ song.lyrics }}</p></div>
+               </li>
+            </ul>
+        {% endfor %}
+      {% endif %}
+      </div>
+
+      <div class="row card-panel lighten-4">
+        <form name="name_form" class="col s12" method="POST" action="/results_on_name" onsubmit="return validate_name_form()">
+          <div class="row">
+            <div class="col s12">
+              <textarea id="song_name" class="materialize-textarea" name="song_name"></textarea>
+              <label for="textarea1">Song Name</label>
+            </div>
+          </div>
+          <button class="btn waves-effect waves-light center-align teal lighten-1"" type="submit" name="name_button">Get similar songs
+            <i class="material-icons right">send</i>
+          </button>
+        </form>
+      </div>
+
+      <div class="row card-panel lighten-4">
+        <form name="lyrics_form" class="col s12" method="POST" action="/results_on_lyrics" onsubmit="return validate_lyrics_form()">
+          <div class="row">
+            <div class="col s12">
+              <textarea id="song_lyrics" class="materialize-textarea" name="song_lyrics"></textarea>
+              <label for="textarea1">Song Lyrics</label>
+            </div>
+          </div>
+          <button class="btn waves-effect waves-light center-align teal lighten-1" type="submit" name="lyrics_button">Get similar songs
+            <i class="material-icons right">send</i>
+          </button>
+        </form>
+      </div>
+
+      <div class="row">
+        <div class="row">
+          <div class="col s12 m12 l12" id="lyrics_emotions" align="left"></div>
+        </div>
+        <form name="lyrics_emotions_form" class="col s12">
+          <div class="row">
+            <div class="col s12">
+              <textarea id="emotions_filename" class="materialize-textarea" name="emotions_filename"></textarea>
+              <label for="textarea1">Enter filename</label>
+            </div>
+          </div>
+          <button id="get_emotion_button" class="btn waves-effect waves-light center-align teal lighten-1" type="submit" name="get_emotion_button">Get emotion scores
+            <i class="material-icons right">send</i>
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="page-footer">
+    <div class="footer-copyright center-align">
+          Made with &#10084 in Columbia University
+    </div>
+  </footer
+</body>
+
+<script>
+//var frequency_list = [{"text":"study","size":40},{"text":"motion","size":15},{"text":"forces","size":10},{"text":"electricity","size":15},{"text":"movement","size":10},{"text":"relation","size":5},{"text":"things","size":10},{"text":"force","size":5},{"text":"ad","size":5},{"text":"energy","size":85},{"text":"living","size":5},{"text":"nonliving","size":5},{"text":"laws","size":15},{"text":"speed","size":45},{"text":"velocity","size":30},{"text":"define","size":5},{"text":"constraints","size":5},{"text":"universe","size":10},{"text":"physics","size":120},{"text":"describing","size":5},{"text":"matter","size":90},{"text":"physics-the","size":5},{"text":"world","size":10},{"text":"works","size":10},{"text":"science","size":70},{"text":"interactions","size":30},{"text":"studies","size":5},{"text":"properties","size":45},{"text":"nature","size":40},{"text":"branch","size":30},{"text":"concerned","size":25},{"text":"source","size":40},{"text":"google","size":10},{"text":"defintions","size":5},{"text":"two","size":15},{"text":"grouped","size":15},{"text":"traditional","size":15},{"text":"fields","size":15},{"text":"acoustics","size":15},{"text":"optics","size":15},{"text":"mechanics","size":20},{"text":"thermodynamics","size":15},{"text":"electromagnetism","size":15},{"text":"modern","size":15},{"text":"extensions","size":15},{"text":"thefreedictionary","size":15},{"text":"interaction","size":15},{"text":"org","size":25},{"text":"answers","size":5},{"text":"natural","size":15},{"text":"objects","size":5},{"text":"treats","size":10},{"text":"acting","size":5},{"text":"department","size":5},{"text":"gravitation","size":5},{"text":"heat","size":10},{"text":"light","size":10},{"text":"magnetism","size":10},{"text":"modify","size":5},{"text":"general","size":10},{"text":"bodies","size":5},{"text":"philosophy","size":5},{"text":"brainyquote","size":5},{"text":"words","size":5},{"text":"ph","size":5},{"text":"html","size":5},{"text":"lrl","size":5},{"text":"zgzmeylfwuy","size":5},{"text":"subject","size":5},{"text":"distinguished","size":5},{"text":"chemistry","size":5},{"text":"biology","size":5},{"text":"includes","size":5},{"text":"radiation","size":5},{"text":"sound","size":5},{"text":"structure","size":5},{"text":"atoms","size":5},{"text":"including","size":10},{"text":"atomic","size":10},{"text":"nuclear","size":10},{"text":"cryogenics","size":10},{"text":"solid-state","size":10},{"text":"particle","size":10},{"text":"plasma","size":10},{"text":"deals","size":5},{"text":"merriam-webster","size":5},{"text":"dictionary","size":10},{"text":"analysis","size":5},{"text":"conducted","size":5},{"text":"order","size":5},{"text":"understand","size":5},{"text":"behaves","size":5},{"text":"en","size":5},{"text":"wikipedia","size":5},{"text":"wiki","size":5},{"text":"physics-","size":5},{"text":"physical","size":5},{"text":"behaviour","size":5},{"text":"collinsdictionary","size":5},{"text":"english","size":5},{"text":"time","size":35},{"text":"distance","size":35},{"text":"wheels","size":5},{"text":"revelations","size":5},{"text":"minute","size":5},{"text":"acceleration","size":20},{"text":"torque","size":5},{"text":"wheel","size":5},{"text":"rotations","size":5},{"text":"resistance","size":5},{"text":"momentum","size":5},{"text":"measure","size":10},{"text":"direction","size":10},{"text":"car","size":5},{"text":"add","size":5},{"text":"traveled","size":5},{"text":"weight","size":5},{"text":"electrical","size":5},{"text":"power","size":5}];
+var frequency_list = {{ return_dict["frequency_list"]|tojson|safe }}
+
+var fill = d3.scale.category20();
+var svg_width = 800;
+var svg_height = 850;
+
+d3.layout.cloud().size([750, 800])
+    .words(frequency_list)
+    .rotate(function() { return ~~(Math.random() * 2) * 90; })
+    .font("Impact")
+    .fontSize(function(d) { return (d.size)/1; })
+    .on("end", draw)
+    .start();
+
+function draw(words) {
+  d3.select("body").select("#chart").append("svg")
+      .attr("width", svg_width)
+      .attr("height", svg_height)
+    .append("g")
+      .attr("transform", "translate(400,450)")
+    .selectAll("text")
+      .data(words)
+    .enter().append("text")
+      .style("font-size", function(d) { return d.size + "px"; })
+      .style("font-family", "Impact")
+      .style("fill", function(d, i) { return fill(i); })
+      .attr("text-anchor", "middle")
+      .attr("transform", function(d) {
+        return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+      })
+      .text(function(d) { return d.text; })
+      .on("click", function (d, i){
+        $.post("/cluster_songs", {'data': d.text}, function(response) {
+       var myDiv = $('#resultarea');
+       myDiv.html(response);
+   });
+          return false;
+      });
+}
+</script>
+
+</html>

@@ -1,0 +1,25 @@
+maximum distance from the sun: 94 million 537 thousand miles
+minimum distance from the sun: 91 million 377 thousand miles
+mean distance from the sun: 92 million 957 thousand and 200 miles
+mean orbital velocity: 66000 miles per hour
+orbital eccentricity: 0.017
+obliquity of the ecliptic: 23 degrees 27 minutes 8.26 seconds
+length of the tropical year: equinox to equinox 365.24 days
+lenght of the sidereal year: fixed star to fixed star 365.26 days
+length of the mean solar day: 24 hours and 3 minutes and 56.5555 seconds at mean solar time
+length of the mean sidereal day: 23 hours and 56 minutes and 4.091 seconds at mean sidereal time
+mass: 6600 million million million tons
+equatorial diameter: 7927 miles
+polar diameter: 7900 miles
+oblateness:  one 298th
+density: 5.41
+mean surface gravitational acceleration of the rotating earth: 32.174 feet per second per second
+escape velocity: 7 miles per second
+
+albedo: 0.39
+albedo: 0.39
+albedo: 0.39
+albedo: 0.39
+albedo: 0.39
+albedo: 0.39
+albedo: 0.39

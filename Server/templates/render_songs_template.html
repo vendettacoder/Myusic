@@ -1,0 +1,18 @@
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js"></script>
+<style>
+    .collapsible-body {
+      white-space:pre-wrap;
+    }
+</style>
+
+{% if return_dict and return_dict.song_list %}
+  {% for song in return_dict.song_list %}
+      <ul class="collapsible popout" data-collapsible="accordion">
+         <li>
+            <div class="collapsible-header"><i class="material-icons">queue_music</i>{{ song.name|safe }}</div>
+            <div class="collapsible-body"><p>{{ song.lyrics }}</p></div>
+         </li>
+      </ul>
+  {% endfor %}
+{% endif %}
