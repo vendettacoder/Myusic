@@ -1,4 +1,7 @@
 # Myusic
+
+Check it out on YOUTUBE @ ⁠⁠⁠⁠⁠⁠⁠⁠https://youtu.be/ifAQwRXvf-M   
+
 Song Clustering and Recommendation based on Lyrics. Clustering done using Latent Dirichlet Allocation (LDA) topic model. Powered on the front-end by Materialize and High charts!
 
 ### Features
